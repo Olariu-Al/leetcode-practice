@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#define STARTING_SIZE 3000
+#define STARTING_SIZE 100
 #define RESIZE 0.75
 
 typedef struct hashMap{
@@ -53,6 +53,38 @@ hash **addInMap(hash **map,int value,int size,int key){
 	return map;
 }
 
+void freeList(hash *start){
+	hash *temp=start;
+	start=start->next;
+	for(;start;start=start->next){
+		free(temp);
+		temp=start;
+	}
+	if(temp != NULL) free(temp);
+}
+
+void freeMap(hash **map,int size){
+	for(int i=0;i<size;i++){
+		if(map[i] == NULL) continue;
+		freeList(map[i]);
+	}
+	free(map);
+}
+
+hash **resizeMap(hash **map,int size){
+	int lastsize=size/2;
+	hash *cursor=map[0];
+	hash **newmap=calloc(size,sizeof(hash*));
+	for(int i=0;i<lastsize;i++){
+		cursor=map[i];
+		for(cursor=map[i];cursor;cursor=cursor->next){
+			newmap=addInMap(newmap,cursor->value,size,cursor->key);
+		}
+	}
+	freeMap(map,lastsize);
+	return newmap;
+}
+
 int* twoSum(int* nums, int numsSize, int target, int* returnSize) {
 	*returnSize=2; // it can ever only be 2 
 	int count=0,sizeTracker=STARTING_SIZE,
@@ -61,10 +93,14 @@ int* twoSum(int* nums, int numsSize, int target, int* returnSize) {
 	for(int i=0;i<numsSize;i++){
 		count++;
 		map=addInMap(map,nums[i],sizeTracker,i);
-		printf("%d added in Map\n",nums[i]);
 		if(checkInMap(map,target-nums[i],sizeTracker,i)){
 			solution=getInMap(map,nums[i],target-nums[i],sizeTracker);
+			freeMap(map,sizeTracker);
 			return solution;
+		}
+		if (((double)count/(double)sizeTracker) > RESIZE){
+			sizeTracker*=2;
+			map=resizeMap(map,sizeTracker);
 		}
 	}
 	return NULL;
