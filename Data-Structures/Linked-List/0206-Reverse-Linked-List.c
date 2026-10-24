@@ -1,14 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "linked_list.h"
+#include "../../lib/linked_list.h"
 
-/**
- * Definition for singly-linked list.
- * struct ListNode {
- *     int val;
- *     struct ListNode *next;
- * };
- */
 struct ListNode* reverseList(struct ListNode* head) {
     if(head == NULL) return NULL;
    struct ListNode *cursor=head->next;
